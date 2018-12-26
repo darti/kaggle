@@ -1,4 +1,6 @@
 from torch.utils.data import Dataset, random_split
+import torchvision
+import torchvision.transforms as transforms
 
 import pandas as pd
 import numpy as np
@@ -6,7 +8,10 @@ import numpy as np
 
 class Mnist(Dataset):
     def __init__(self, csv_file):
-        self.dataset = pd.read_csv(csv_file, dtype=np.int8)
+        self.dataset = pd.read_csv(csv_file, dtype=np.float32)
+        self.transform = transforms.Compose([
+            transforms.ToTensor()
+        ])
 
     def __getitem__(self, index):
         try:
@@ -14,9 +19,12 @@ class Mnist(Dataset):
         except AttributeError:
             idx = index
 
-        print(self.dataset.iloc[idx, 0])
+        img = self.dataset.iloc[idx, 1:].values.reshape(28, 28, 1)
+        img = self.transform(img)
 
-        return self.dataset.iloc[idx, 1:], self.dataset.iloc[idx, 0]
+        label = self.dataset.iloc[idx, 0]
+
+        return img, label
 
     def __len__(self):
         return len(self.dataset)
